@@ -1,5 +1,11 @@
 # Cybersecurity Labs Portfolio
 
+![Security](https://img.shields.io/badge/Focus-Network%20Security-blue)
+![pfSense](https://img.shields.io/badge/Tool-pfSense-green)
+![Splunk](https://img.shields.io/badge/Tool-Splunk-orange)
+![Suricata](https://img.shields.io/badge/Tool-Suricata-red)
+![Status](https://img.shields.io/badge/Status-In%20Progress-yellow)
+
 Hands-on network security labs covering firewall configuration, intrusion detection, and SIEM integration. Labs completed as part of the NDE Module 05 — Network Security Controls (Technical Controls) course.
 
 ---
@@ -107,29 +113,19 @@ Suricata is an open-source network intrusion detection and prevention system. It
 
 ### Key Steps
 1. Installed **Splunk Enterprise 8.0.1** on Admin Machine-1 (10.10.1.2)
-   - Set credentials: admin / admin@123
    - Updated `limits.conf` → set `max_searches_per_cpu=2` at line 145
 2. Installed **Npcap 0.99-r7** on Web Server in WinPcap API-compatible mode
 3. Installed **Suricata 4.1.4** on Web Server
    - Created `threshold.config` file at `C:\Program Files\Suricata\`
    - Created custom FTP brute-force detection rule in `local.rules`:
-     ```
-     alert tcp any 21 -> any any (msg:"ET SCAN Potential FTP Brute-Force attempt"; flow:from_server,established; dsize:<100; content:"530 "; depth:4; pcre:"/530\s+(Login|User|Failed|Not)/smi"; classtype:unsuccessful-user; threshold: type threshold, track by_dst, count 5, seconds 300;)
-     ```
-   - Edited `suricata.yaml` to comment out default rules (lines 1866–1910) and added `- local.rules`
+   - Edited `suricata.yaml` to comment out default rules (lines 1866-1910) and added `- local.rules`
 4. Installed **Splunk Universal Forwarder 7.3.2** on Web Server
    - Receiving indexer set to `10.10.1.2:9997`
    - Configured `inputs.conf` to monitor `C:\Program Files\Suricata\log`
    - Configured `outputs.conf`, `props.conf`, and `transforms.conf` for IIS log parsing
    - Restarted SplunkForwarder service
-5. Launched Suricata on Web Server:
-   ```
-   suricata.exe -c suricata.yaml -i 10.10.1.16
-   ```
-6. On Attacker Machine (10.10.1.50), ran Hydra FTP brute-force attack:
-   ```
-   hydra -L 'wrd.txt' -P 'pwd.txt' ftp://10.10.1.16
-   ```
+5. Launched Suricata on Web Server using the command `suricata.exe -c suricata.yaml -i 10.10.1.16`
+6. On Attacker Machine (10.10.1.50), ran Hydra FTP brute-force attack using `hydra -L 'wrd.txt' -P 'pwd.txt' ftp://10.10.1.16`
 7. On Admin Machine-1, configured Splunk to receive on port 9997:
    - **Settings → Forwarding and Receiving → Configure Receiving → Add port 9997**
    - Enabled and made visible the SplunkForwarder app
