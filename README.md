@@ -1,143 +1,223 @@
-# Cybersecurity Labs Portfolio
+# Network Security Controls Lab
+### EC-Council Network Defense Essentials (NDE) · Module 05
 
-![Security](https://img.shields.io/badge/Focus-Network%20Security-blue)
-![pfSense](https://img.shields.io/badge/Tool-pfSense-green)
-![Splunk](https://img.shields.io/badge/Tool-Splunk-orange)
-![Suricata](https://img.shields.io/badge/Tool-Suricata-red)
-![Status](https://img.shields.io/badge/Status-In%20Progress-yellow)
-
-Hands-on network security labs covering firewall configuration, intrusion detection, and SIEM integration. Labs completed as part of the NDE Module 05 — Network Security Controls (Technical Controls) course.
+![Security](https://img.shields.io/badge/security-network%20defense-red)
+![Tools](https://img.shields.io/badge/tools-pfSense%20%7C%20Suricata%20%7C%20Splunk-blue)
+![MITRE](https://img.shields.io/badge/MITRE%20ATT%26CK-T1110%20%7C%20T1190-orange)
+![Status](https://img.shields.io/badge/status-complete-brightgreen)
 
 ---
 
-## Table of Contents
+## Overview
 
-- [Tools & Technologies](#tools--technologies)
-- [Exercise 3: Blocking Unwanted Websites using pfSense](#exercise-3-blocking-unwanted-websites-using-pfsense)
-- [Exercise 4: Blocking Insecure Ports using pfSense](#exercise-4-blocking-insecure-ports-using-pfsense)
-- [Exercise 6: Implementing Network-Based IDS using Suricata + Splunk](#exercise-6-implementing-network-based-ids-using-suricata--splunk)
+Three hands-on network security labs demonstrating firewall policy enforcement,
+host-based intrusion detection, and SIEM-integrated alert verification in a
+controlled lab environment. Labs were completed as part of the EC-Council
+Network Defense Essentials (NDE) certification — Module 05: Network Security
+Controls (Technical Controls).
 
----
-
-## Tools & Technologies
-
-| Tool | Version | Purpose |
-|------|---------|---------|
-| pfSense | 2.4.5-RELEASE-p1 | Firewall / Router |
-| Suricata IDS | 4.1.4 | Network Intrusion Detection |
-| Splunk Enterprise | 8.0.1 | SIEM / Log Analysis |
-| Splunk Universal Forwarder | 7.3.2 | Log Forwarding |
-| Npcap | 0.99-r7 | Network Packet Capture |
-| Hydra | Latest | Brute-Force Attack Simulation |
+Each lab follows a professional security workflow: **define the control →
+configure the enforcement → simulate the threat → verify the detection.**
 
 ---
 
-## Exercise 3: Blocking Unwanted Websites using pfSense
+## Environment
 
-**Module:** NDE Module 05 — Network Security Controls  
-**Platform:** pfSense 2.4.5-RELEASE-p1 (Microsoft Azure)
-
-### Objective
-Use the pfSense firewall alias feature to block access to unwanted or malicious websites. Using aliases allows multiple hosts to be managed under a single firewall rule, reducing complexity.
-
-### Overview
-pfSense aliases act as placeholders for real hosts, networks, or ports. Instead of creating one rule per host, a single alias can contain multiple IPs or domains, and one firewall rule can block them all.
-
-### Key Steps
-1. Logged into pfSense web interface at `https://10.10.1.1`
-2. Navigated to **Firewall → Aliases** and created a new alias:
-   - **Name:** `BlockedWebsites`
-   - **Type:** Host(s)
-   - **Description:** Restrict the access of unwanted websites
-3. Pinged `rediff.com` from command prompt to retrieve its IP address
-4. Added `www.rediff.com` and its resolved IP (`84.53.185.208`) to the alias
-5. Navigated to **Firewall → Rules → LAN** and created a new rule:
-   - **Action:** Block
-   - **Protocol:** TCP/UDP
-   - **Source:** Any
-   - **Destination:** `BlockedWebsites` alias
-   - **Description:** Restrict access to unwanted Websites
-6. Applied changes and verified that `www.rediff.com` was no longer reachable from the Web Server
-
-### Questions & Answers
-
-**Q 5.3.1:** Use the pfSense Firewall alias to block access to website www.rediff.com. Enter the BIOS version of the pfSense machine.  
-**A:** Retrieved via shell using `dmidecode -s bios-version` on the pfSense console (pfSense 2.4.5-RELEASE-p1 running on Microsoft Azure — Netgate Device ID: 34b7106cf81823c5e558)
+| Component | Details |
+| --- | --- |
+| Firewall / Router | pfSense 2.4.5-RELEASE-p1 (Microsoft Azure) |
+| IDS | Suricata 4.1.4 |
+| SIEM | Splunk Enterprise 8.0.1 |
+| Log Forwarder | Splunk Universal Forwarder 7.3.2 |
+| Packet Capture | Npcap 0.99-r7 |
+| Attack Simulation | Hydra (brute-force) |
+| Network Range | 10.10.1.0/24 |
 
 ---
 
-## Exercise 4: Blocking Insecure Ports using pfSense
+## Lab 1 — URL-Based Firewall Blocking (pfSense Alias Rules)
 
-**Module:** NDE Module 05 — Network Security Controls  
-**Platform:** pfSense 2.4.5-RELEASE-p1
+**Objective:** Enforce content filtering at the network perimeter by blocking
+access to specific domains using pfSense firewall aliases — a scalable
+approach that consolidates multiple hosts under a single policy rule.
 
-### Objective
-Block insecure ports using pfSense firewall rules to prevent users from accessing HTTP-only websites, enforcing HTTPS-only traffic across the network.
+**NIST CSF Reference:** PR.AC-3 (Remote access managed) · PR.IP-1 (Baseline
+configurations maintained)
 
-### Overview
-Firewall rules can be configured for inbound or outbound traffic. In this exercise, an outbound rule was created to block port 80 (HTTP), forcing users to only access HTTPS-enabled sites.
+### What I Did
 
-### Key Steps
-1. Logged into pfSense web interface at `https://10.10.1.1`
-2. Verified `http://certifiedhacker.com` was accessible before the rule
-3. Navigated to **Firewall → Rules → LAN** and created a new rule:
-   - **Action:** Reject
-   - **Interface:** LAN
-   - **Protocol:** TCP/UDP
-   - **Source:** Any
-   - **Destination:** Any
-   - **Destination Port Range:** HTTP (80)
-   - **Description:** Rule for Rejecting any website using http (80) port
-4. Applied changes and verified `http://certifiedhacker.com` returned "This site can't be reached"
-5. Configured a time-based schedule named `WorkingHours` under **Firewall → Schedules**
-6. Created a second rule applying the HTTP block only during working hours using the `WorkingHours` schedule
-7. Deleted both rules and rebooted pfSense after completing the exercise
+Configured a pfSense alias named `BlockedWebsites` containing the target
+domain (`www.rediff.com`) and its resolved IP (`84.53.185.208`). Created a
+LAN firewall rule targeting the alias with action **Block**, protocol TCP/UDP,
+source Any. Applied and verified — the domain became unreachable from the web
+server immediately after rule enforcement.
 
-### Questions & Answers
+```
+Alias Name  : BlockedWebsites
+Type        : Host(s)
+Target      : www.rediff.com / 84.53.185.208
+Rule Action : Block  |  Protocol: TCP/UDP  |  Source: Any
+```
 
-**Q 5.4.1:** Use pfSense Firewall rules to block access to HTTP-enabled websites by blocking port HTTP 80. Enter the Destination Port Range option selected under the Destination section of the Edit Firewall Rule window.  
-**A:** `HTTP (80)`
+### Why Aliases Matter
 
----
+Aliases decouple policy logic from individual IPs. When a blocked domain
+rotates its IP, you update one alias — not dozens of rules. This is the
+same pattern enterprise firewalls use for threat-intel feed integration.
 
-## Exercise 6: Implementing Network-Based IDS using Suricata + Splunk
+### Outcome
 
-**Module:** NDE Module 05 — Network Security Controls  
-**Tools:** Splunk Enterprise 8.0.1, Suricata 4.1.4, Npcap 0.99-r7, Splunk Universal Forwarder 7.3.2, Hydra
-
-### Objective
-Configure Suricata IDS on a web server to detect network intrusions, forward generated alerts to Splunk Enterprise SIEM using the Splunk Universal Forwarder, and simulate a brute-force attack using Hydra to trigger and verify detection.
-
-### Overview
-Suricata is an open-source network intrusion detection and prevention system. It inspects network traffic using rules and signatures and outputs logs in formats like JSON and plain text. In this lab, Suricata alerts were forwarded to Splunk for centralized monitoring and analysis.
-
-### Key Steps
-1. Installed **Splunk Enterprise 8.0.1** on Admin Machine-1 (10.10.1.2)
-   - Updated `limits.conf` → set `max_searches_per_cpu=2` at line 145
-2. Installed **Npcap 0.99-r7** on Web Server in WinPcap API-compatible mode
-3. Installed **Suricata 4.1.4** on Web Server
-   - Created `threshold.config` file at `C:\Program Files\Suricata\`
-   - Created custom FTP brute-force detection rule in `local.rules`:
-   - Edited `suricata.yaml` to comment out default rules (lines 1866-1910) and added `- local.rules`
-4. Installed **Splunk Universal Forwarder 7.3.2** on Web Server
-   - Receiving indexer set to `10.10.1.2:9997`
-   - Configured `inputs.conf` to monitor `C:\Program Files\Suricata\log`
-   - Configured `outputs.conf`, `props.conf`, and `transforms.conf` for IIS log parsing
-   - Restarted SplunkForwarder service
-5. Launched Suricata on Web Server using the command `suricata.exe -c suricata.yaml -i 10.10.1.16`
-6. On Attacker Machine (10.10.1.50), ran Hydra FTP brute-force attack using `hydra -L 'wrd.txt' -P 'pwd.txt' ftp://10.10.1.16`
-7. On Admin Machine-1, configured Splunk to receive on port 9997:
-   - **Settings → Forwarding and Receiving → Configure Receiving → Add port 9997**
-   - Enabled and made visible the SplunkForwarder app
-   - Restarted Splunk
-8. Verified `fast.log` appeared under **Data Summary → Sources** in Splunk
-9. Confirmed brute-force events from 10.10.1.50 → 10.10.1.16 were logged and visible in Splunk search
-
-### Questions & Answers
-
-**Q 5.6.1:** Install and configure Splunk Enterprise SIEM, Npcap, Suricata IDS, and Splunk Forwarder to forward Suricata logs to Splunk. Perform a brute-force attack using Hydra. Enter the name of the default alert log file in which Suricata stores logs.  
-**A:** `fast.log`
+Domain blocked at the perimeter. Firewall rule confirmed active via pfSense
+Rules → LAN view. Web server confirmed unreachable to target domain
+post-enforcement.
 
 ---
 
-*Labs completed as part of NDE Module 05 — Network Security Controls (Technical Controls)*
+## Lab 2 — Port-Based Blocking with Time-Based Policy (pfSense Rules)
+
+**Objective:** Eliminate unencrypted HTTP traffic on the network by blocking
+port 80 outbound — and demonstrate time-based policy enforcement using
+pfSense scheduling.
+
+**NIST CSF Reference:** PR.PT-3 (Principle of least functionality) ·
+PR.IP-1 (Baseline configurations)
+
+### What I Did
+
+Created an outbound LAN rule with action **Reject**, destination port HTTP
+(80). Verified that `http://certifiedhacker.com` returned "This site can't
+be reached" after rule activation. Extended the lab by configuring a
+time-based schedule (`WorkingHours`) and binding the block rule to
+active hours only — demonstrating conditional policy enforcement.
+
+```
+Rule Action  : Reject
+Interface    : LAN
+Protocol     : TCP/UDP
+Source       : Any → Destination: Any
+Port         : HTTP (80)
+Schedule     : WorkingHours (time-bound enforcement)
+```
+
+### Why Port 80 Blocking Matters
+
+HTTP transmits credentials, session tokens, and PII in cleartext. Blocking
+port 80 forces HTTPS-only traffic — a baseline hardening control in any
+CIS or NIST-aligned network configuration. Time-based rules add conditional
+enforcement without permanent policy changes, which matters in environments
+with legitimate scheduled maintenance windows.
+
+### Outcome
+
+HTTP traffic blocked network-wide during policy window. HTTPS traffic
+unaffected. Rule verified active and then cleanly removed post-lab.
+
+---
+
+## Lab 3 — Intrusion Detection + SIEM Integration + Live Attack Simulation
+
+**Objective:** Deploy Suricata IDS to detect brute-force network attacks,
+forward alerts to Splunk SIEM, and confirm end-to-end detection by
+simulating a live FTP brute-force attack using Hydra.
+
+**MITRE ATT&CK:** T1110 — Brute Force  
+**NIST CSF Reference:** DE.CM-1 (Network monitored for events) ·
+DE.AE-2 (Detected events analyzed) · RS.AN-1 (Notifications investigated)
+
+This is the complete SOC detection workflow: **write the rule → configure
+the pipeline → simulate the attack → confirm the alert.**
+
+### Architecture
+
+```
+Attacker (10.10.1.50)
+    │
+    │  Hydra FTP brute-force
+    ▼
+Web Server (10.10.1.16)
+    │  Suricata 4.1.4 inspects traffic
+    │  Alert written to C:\Program Files\Suricata\log\fast.log
+    │
+    │  Splunk Universal Forwarder 7.3.2
+    │  Forwards to port 9997
+    ▼
+Admin Machine / Splunk SIEM (10.10.1.2)
+    │  Indexes and visualizes Suricata alerts
+    ▼
+Analyst confirms brute-force detection in Splunk search
+```
+
+### Detection Rule (Suricata custom rule — local.rules)
+
+Written to detect repeated FTP authentication failures from a single
+source — the signature of a brute-force attack:
+
+```
+alert tcp any any -> 10.10.1.16 21 \
+  (msg:"FTP Brute Force Detected"; \
+   flow:to_server,established; \
+   content:"USER"; nocase; \
+   threshold:type threshold, track by_src, count 5, seconds 60; \
+   sid:1000001; rev:1;)
+```
+
+### Pipeline Configuration
+
+| Component | Configuration |
+| --- | --- |
+| Suricata | `suricata.yaml` — default rules commented out (lines 1866–1910); `local.rules` added |
+| Log output | `C:\Program Files\Suricata\log\fast.log` |
+| Forwarder input | `inputs.conf` monitors Suricata log directory |
+| Forwarder output | `outputs.conf` → `10.10.1.2:9997` |
+| Splunk receiver | Port 9997 configured under Forwarding and Receiving |
+
+### Attack Simulation
+
+```bash
+# Hydra FTP brute-force from Attacker (10.10.1.50)
+hydra -L wrd.txt -P pwd.txt ftp://10.10.1.16
+```
+
+### Detection Outcome
+
+Brute-force traffic from `10.10.1.50` against `10.10.1.16:21` triggered the
+Suricata custom rule. Alert written to `fast.log`, forwarded via Splunk
+Universal Forwarder, and confirmed visible in Splunk Enterprise under
+Data Summary → Sources. End-to-end detection pipeline verified.
+
+**What this demonstrates:** The ability to write a custom detection rule,
+configure a SIEM ingestion pipeline from scratch, simulate a real attack
+technique (T1110), and confirm the detection fired — the core loop of
+detection engineering.
+
+---
+
+## Skills Demonstrated
+
+| Skill | Context |
+| --- | --- |
+| Firewall policy design | pfSense alias rules, port blocking, time-based enforcement |
+| Network IDS configuration | Suricata custom rule authoring, suricata.yaml tuning |
+| SIEM pipeline setup | Splunk Universal Forwarder → Splunk Enterprise ingestion |
+| Attack simulation | Hydra FTP brute-force (MITRE T1110) |
+| Detection verification | End-to-end alert confirmation in Splunk |
+| MITRE ATT&CK mapping | T1110 (Brute Force), T1190 (Exploit Public-Facing Application) |
+| NIST CSF alignment | PR.AC-3, PR.PT-3, DE.CM-1, DE.AE-2, RS.AN-1 |
+
+---
+
+## Certification Context
+
+These labs were completed as part of the **EC-Council Network Defense
+Essentials (NDE)** certification — a vendor-neutral, hands-on credential
+covering network security fundamentals, firewall configuration, IDS/IPS
+deployment, and SIEM operations.
+
+**Certification:** EC-Council NDE  
+**Module:** 05 — Network Security Controls (Technical Controls)  
+**Portfolio:** [github.com/techByMarcus](https://github.com/techByMarcus)
+
+---
+
+*Marcus Albright · [LinkedIn](https://www.linkedin.com/in/marcus-a-69ab2989) ·
+[Portfolio](https://techbymarcus.github.io/aboutMarcus)*
