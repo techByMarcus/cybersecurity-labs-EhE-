@@ -1,0 +1,5 @@
+# EC-Council EHE training lab artifact
+# FTP brute-force detection rule used in the controlled lab environment.
+# Included for portfolio documentation; not presented as production tuning.
+
+alert tcp any any -> 10.10.1.16 21 (msg:"FTP Brute Force Detected"; flow:to_server,established; content:"USER"; nocase; threshold:type threshold, track by_src, count 5, seconds 60; sid:1000001; rev:1;)
