@@ -1,71 +1,35 @@
-# EC-Council Ethical Hacking Essentials — Security Labs
+# Security Controls and Detection | Hands-On Lab Portfolio
 
-Selected hands-on security labs completed as part of my EC-Council Ethical Hacking Essentials (EHE) training and certification work.
+**Firewall policies · IDS alert generation · Splunk verification · Controlled training environment**
 
-I created this repository to document the systems I worked with, the controls I configured, the attack activity I generated in the lab, and how I verified the defensive result. The goal is to show the work itself rather than just list tools on a resume.
+> **Start here:** [Suricata → Splunk detection workflow](labs/03-suricata-splunk-detection.md). This lab follows simulated authentication attack traffic through detection and SIEM visibility.
 
-## Lab environment
+## Three lab outcomes
 
-The exercises used a controlled training network with the following components:
+| Exercise | What I configured / evaluated | Evidence to inspect |
+|---|---|---|
+| **[Suricata to Splunk alert workflow](labs/03-suricata-splunk-detection.md)** | Detection rule, log forwarding, controlled Hydra traffic, and alert verification | Lab procedure and configuration notes |
+| **[pfSense domain restriction](labs/01-pfsense-domain-blocking.md)** | Alias and LAN blocking rule; connectivity verification | Lab walkthrough |
+| **[pfSense port and time policy](labs/02-pfsense-port-policy.md)** | Port restriction with schedule | Lab walkthrough |
 
-| Component | Lab system |
-| --- | --- |
-| Firewall / router | pfSense 2.4.5-RELEASE-p1 |
-| IDS | Suricata 4.1.4 |
-| SIEM | Splunk Enterprise 8.0.1 |
-| Log forwarder | Splunk Universal Forwarder 7.3.2 |
-| Packet capture support | Npcap 0.99-r7 |
-| Attack simulation | Hydra |
-| Network | 10.10.1.0/24 |
+## Detection chain
 
-These versions reflect the training environment used in the exercises, not recommendations for current production deployments.
+```text
+Authorized lab traffic → Suricata rule match → alert log → Splunk ingestion → analyst review
+```
 
-## What I worked on
+The goal of the third exercise was **verification of the complete visibility path**, not a claim to operating a production SOC.
 
-| Lab | Work performed | Tools |
-| --- | --- | --- |
-| [1. pfSense domain blocking](./labs/01-pfsense-domain-blocking.md) | Created a firewall alias, applied a LAN blocking rule, and verified the destination became unreachable | pfSense |
-| [2. pfSense port and schedule policy](./labs/02-pfsense-port-policy.md) | Created a port-based HTTP restriction and applied a time-based schedule | pfSense |
-| [3. Suricata to Splunk detection pipeline](./labs/03-suricata-splunk-detection.md) | Configured a Suricata rule, forwarded the alert log into Splunk, generated FTP brute-force traffic with Hydra, and verified the alert | Suricata, Splunk, Hydra |
+## Inspect the configuration
 
-The third lab is the most directly relevant to SOC work because it covers the full detection path from simulated attack activity to IDS alert generation and SIEM verification.
+[Suricata detection rule](artifacts/suricata-local.rules) · [Lab configuration notes](artifacts/configuration-notes.md)
 
-## Technical artifacts
+## Training context
 
-The repository includes the configuration details retained from the exercises:
+EC-Council Ethical Hacking Essentials exercises in an isolated training network using pfSense 2.4.5, Suricata 4.1.4, Splunk 8.0.1, Splunk Universal Forwarder 7.3.2 and Hydra. Versions describe the lab environment, **not** recommended production versions.
 
-- [Suricata detection rule](./artifacts/suricata-local.rules)
-- [Lab configuration notes](./artifacts/configuration-notes.md)
+Original logs/screenshots were not retained for every exercise; the documentation does not invent missing evidence.
 
-These files document the values used in the training environment. They are included as portfolio evidence, not as production-ready configuration templates.
+**Relevant skills:** Network access policy, IDS/SIEM concepts, log routing, detection verification, and documentation.
 
-## What this work demonstrates
-
-The labs gave me hands-on exposure to:
-
-- pfSense firewall rules and aliases
-- port-based and scheduled access controls
-- Suricata IDS rule configuration
-- Splunk Universal Forwarder and Splunk Enterprise ingestion
-- Hydra-based brute-force simulation in an isolated lab
-- alert verification and basic detection workflow
-- the relationship between attack activity, network controls, logs, and SIEM visibility
-
-## Evidence and scope
-
-This is training-lab work, not production security administration.
-
-The repository documents configuration details, commands, and observations from exercises I completed. Where original screenshots or raw log exports were not retained, I do not recreate them and present them as original evidence. The documentation instead identifies what was configured, how the result was verified, and what the exercise demonstrated.
-
-## Certification context
-
-**EC-Council Ethical Hacking Essentials (EHE)**
-
-This repository represents selected hands-on work completed during that training and certification path. It is one part of a broader cybersecurity portfolio that also includes SOC investigations, authentication-log analysis, network-attack labs, and a Python security-audit project.
-
-## Related work
-
-- [SOC Analyst Portfolio](https://github.com/techByMarcus/soc-analyst-portfolio)
-- [Authentication Log Investigation](https://github.com/techByMarcus/real-world-log-investigation)
-- [Security Audit Tool](https://github.com/techByMarcus/security-audit-tool)
-- [Portfolio](https://techbymarcus.github.io/aboutMarcus/)
+[Portfolio](https://techbymarcus.github.io/aboutMarcus/) · [SOC cases](https://github.com/techByMarcus/soc-analyst-portfolio)
